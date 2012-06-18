@@ -64,20 +64,16 @@
      * is (2^k)-1, and it is updated as follows: mask = (mask << 1) | 1.
      **/
     #define INDEX_LENGTH_MASK 511 //111111111 (INITIAL_INDEX_LENGTH ones)
-    /**
-     * uint32_t is a typedef for uint32_t, since the indexes have to be
-     * written into the compressed file.
-     **/
     #define MIN_COMPRESSION_LEVEL 1
     #define DEFAULT_COMPRESSION_LEVEL 3
     #define MAX_COMPRESSION_LEVEL 5
     #define HEADER_LENGTH 3
     /**
-     * Indexes of the configuration table
+     * Indexes to access the configuration table.
      **/
     #define MAX_CHILD 0
     #define HASH_TABLE_ENTRIES 1
     #define HASH_TABLE_ENTRIES_MODULO_MASK 2
-   
+
     uint32_t getCompressionParameter(int compressionLevel, int parameter);
 #endif

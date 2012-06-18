@@ -82,7 +82,7 @@ ssize_t storeBitBuffer(int fileDescriptor, uint32_t* buffer, size_t count)
      * happens only when the buffer is full -> amortized cost: O(1)
      **/
     for(; n--;)
-        buffer[n] = HOST_TO_LITTLE_ENDIAN_CONVERT(buffer[n]);
+        buffer[n] = htole32(buffer[n]);
     n = 0; // Now n == 0
     while(n < count) // n indexes bytes now
     {
@@ -128,7 +128,7 @@ ssize_t loadBitBuffer(int fileDescriptor, uint32_t* buffer, size_t count)
      * happens only when the buffer is full -> amortized cost: O(1)
      **/
     for(; n--;)
-        buffer[n] = LITTLE_ENDIAN_TO_HOST_CONVERT(buffer[n]);
+        buffer[n] = le32toh(buffer[n]);
     return readBytes;
 }
 

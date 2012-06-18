@@ -78,8 +78,7 @@ uint32_t hashFunction(uint32_t key1, uint32_t key2, uint32_t moduloMask)
 {
     uint32_t key = (key1 << 8) | key2;
     uint8_t* keyArray = ((uint8_t*)&key);
-    return (sBox[keyArray[0]] ^ sBox[keyArray[1]] ^ sBox[keyArray[2]] ^ sBox[keyArray[3]] ^ sBox[keyArray[4]] ^
-            sBox[keyArray[5]] ^ sBox[keyArray[6]] ^ sBox[keyArray[7]]) & moduloMask;
+    return (sBox[keyArray[0]] ^ sBox[keyArray[1]] ^ sBox[keyArray[2]] ^ sBox[keyArray[3]]) & moduloMask;
 }
 
 /*
@@ -187,7 +186,7 @@ uint32_t hashLookup(struct LZ78HashTableEntry* table, uint32_t fatherIndex, uint
         return -1;
     uint32_t index = hashFunction(fatherIndex, childValue, moduloMask);
     //slow but it's done only in case of collision, the loop condition is: !empty(entry) && !equal(key, entry.key)
-     while((table[index].childIndex && (table[index].childValue != childValue || table[index].fatherIndex != fatherIndex)))
+    while((table[index].childIndex && (table[index].childValue != childValue || table[index].fatherIndex != fatherIndex)))
         index = (index+1) & moduloMask;
     return table[index].childIndex;
 }
