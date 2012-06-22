@@ -25,6 +25,25 @@
 #include "BitwiseBufferedFile.h"
 #include <errno.h>
 
+/**
+ * The bytes of the file to be compressed are read using fread.
+ * fread improves the performances of the read syscall adding a buffering
+ * layer: the cost of the read syscall is amortized reading more than the
+ * requested bytes and buffering them, so that the next calls can avoid the
+ * costly read syscall and return the buffer content.
+ * Anyway, fread also has a cost (at least, the cost of construction of the
+ * activation record).
+ * The compressor choises are taken for each byte read. But, if a different
+ * call to fread is done for each read byte, the total cost of calling fread
+ * can be high. To reduce that cost, we adopted the same strategy used by
+ * fread: another buffering layer is introduced. The bytes are accessed on
+ * the buffer, and when all the buffered bytes have been used, a fread call
+ * is done to fill up the buffer. So, the fread cost is amortized of a
+ * factor which is proportional to the buffer size.
+ * The LOCAL_BYTE_BUFFER_LENGTH constant is the length for this local buffer.
+ **/
+#define LOCAL_BYTE_BUFFER_LENGTH 128
+
 int compress(FILE* inputFile, FILE* outputFile, int compressionLevel)
 {
     struct BitwiseBufferedFile* w = openBitwiseBufferedFile(NULL, 1, -1, outputFile);
@@ -35,10 +54,9 @@ int compress(FILE* inputFile, FILE* outputFile, int compressionLevel)
     struct LZ78HashTableEntry* hashTable;
     uint32_t childIndex = 257;
     uint32_t lookupIndex = ROOT_INDEX;
-    uint32_t indexLengthMask = INDEX_LENGTH_MASK;
+    uint32_t indexLengthMask = (1 << INITIAL_INDEX_LENGTH) - 1;
     uint32_t child;
     uint32_t hashTableEntries = getCompressionParameter(compressionLevel, HASH_TABLE_ENTRIES);
-    uint32_t hashTableLength = hashTableEntries*sizeof(struct LZ78HashTableEntry);
     uint32_t moduloMask = getCompressionParameter(compressionLevel, HASH_TABLE_ENTRIES_MODULO_MASK);
     uint32_t maxChild = getCompressionParameter(compressionLevel, MAX_CHILD);
     if(!(maxChild && hashTableEntries && moduloMask) || inputFile == NULL || w == NULL)
@@ -47,7 +65,7 @@ int compress(FILE* inputFile, FILE* outputFile, int compressionLevel)
         if(w != NULL) closeBitwiseBufferedFile(w);
         return -1;
     }
-    hashTable = hashCreate(hashTableLength, moduloMask);
+    hashTable = hashCreate(hashTableEntries, moduloMask);
     if(hashTable == NULL)
     {
         closeBitwiseBufferedFile(w);
@@ -79,11 +97,11 @@ int compress(FILE* inputFile, FILE* outputFile, int compressionLevel)
                 lookupIndex = readByte[byteIndex] + 1; //ROOT_INDEX = 0 so ASCII characters are indexed in [1, 257]
                 if (childIndex == maxChild) //hash table is full
                 {
-                    if(hashReset(hashTable, hashTableLength, moduloMask) == NULL)
+                    if(hashReset(hashTable, hashTableEntries, moduloMask) == NULL)
                         goto exceptionHandler; //hash table was not successfully created
                     childIndex = FIRST_CHILD; //starts from the beginning
                     indexLength = INITIAL_INDEX_LENGTH;
-                    indexLengthMask = INDEX_LENGTH_MASK;
+                    indexLengthMask = (1 << INITIAL_INDEX_LENGTH) - 1;
                 }
             }
         }
@@ -95,11 +113,11 @@ int compress(FILE* inputFile, FILE* outputFile, int compressionLevel)
     }
     if(writeBitBuffer(w, lookupIndex, indexLength) == -1 || writeBitBuffer(w, ROOT_INDEX, indexLength) == -1)
         goto exceptionHandler;
-    hashDestroy(hashTable, hashTableLength);
+    hashDestroy(hashTable, hashTableEntries);
     return closeBitwiseBufferedFile(w);
 
     exceptionHandler:
-        hashDestroy(hashTable, hashTableLength);
+        hashDestroy(hashTable, hashTableEntries);
         closeBitwiseBufferedFile(w);
         return -1;
 }

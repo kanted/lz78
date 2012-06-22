@@ -29,6 +29,11 @@
 #include "mathUtils.h"
 #include "BitwiseBufferedFile.h"
 
+#define CELL_TYPE_LENGTH (sizeof(uint32_t)*8)
+#define FULL_MASK 0xFFFFFFFF
+#define BUFFER_CELLS (BUFSIZ/(sizeof(uint32_t)))
+#define BUFFER_BYTES (BUFFER_CELLS*sizeof(uint32_t))
+
 struct BitwiseBufferedFile
 {
     int fileDescriptor;
@@ -241,9 +246,4 @@ ssize_t writeBitBuffer(struct BitwiseBufferedFile* bitFile, uint32_t data, int l
         data >>= bitsToBeWritten;
     }
     return 0;
-}
-
-int emptyFile(struct BitwiseBufferedFile* bitFile)
-{
-    return bitFile->emptyFile;
 }

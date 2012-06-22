@@ -47,7 +47,7 @@ void preappend(struct LZ78DecompressorTableEntry* current, struct LZ78Decompress
 int decompress(FILE* inputFile, FILE* outputFile)
 {
     struct BitwiseBufferedFile* r = openBitwiseBufferedFile(NULL, O_RDONLY, -1, inputFile);
-    uint32_t indexLengthMask = INDEX_LENGTH_MASK;
+    uint32_t indexLengthMask = (1 << INITIAL_INDEX_LENGTH) - 1;
     size_t indexLength = INITIAL_INDEX_LENGTH;
     uint32_t childIndex = FIRST_CHILD;
     uint32_t currentIndex = 0;
@@ -149,7 +149,7 @@ int decompress(FILE* inputFile, FILE* outputFile)
             // No table reset is needed
             childIndex = FIRST_CHILD;
             indexLength = INITIAL_INDEX_LENGTH;
-            indexLengthMask = INDEX_LENGTH_MASK;
+            indexLengthMask = (1 << INITIAL_INDEX_LENGTH) - 1;
         }
     }
     closeBitwiseBufferedFile(r);

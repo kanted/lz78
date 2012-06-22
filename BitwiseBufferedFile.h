@@ -21,19 +21,9 @@
 
 #include <sys/types.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #ifndef BITWISE_BUFFERED_FILE
 #define BITWISE_BUFFERED_FILE
-
-#define CELL_TYPE_LENGTH 32
-#define SHIFT_FACTOR 2
-#define BITWISE_SHIFT_FACTOR 5
-#define FULL_MASK 0xFFFFFFFF
-#define MODULO_MASK 3
-#define BITWISE_MODULO_MASK 31
-#define BUFFER_CELLS (BUFSIZ/(CELL_TYPE_LENGTH/8))
-#define BUFFER_BYTES (BUFFER_CELLS*sizeof(uint32_t))
 
 struct BitwiseBufferedFile;
 
@@ -83,7 +73,5 @@ ssize_t readBitBuffer(struct BitwiseBufferedFile* bitFile, uint32_t* data, size_
  * @param length The number of bits to write.
  **/
 ssize_t writeBitBuffer(struct BitwiseBufferedFile* bitFile, uint32_t data, int length);
-
-int emptyFile(struct BitwiseBufferedFile* bitFile);
 
 #endif

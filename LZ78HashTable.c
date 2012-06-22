@@ -26,6 +26,15 @@
 #include "LZ78HashTable.h"
 #include "Commons.h"
 
+struct LZ78HashTableEntry
+{
+    //key:
+    uint32_t fatherIndex;
+    uint32_t childValue; //Only one byte is used
+    //value:
+    uint32_t childIndex;
+};
+
 const uint32_t sBox[] =
 {
     0xF53E1837, 0x5F14C86B, 0x9EE3964C, 0xFA796D53, 0x32223FC3, 0x4D82BC98,
@@ -191,13 +200,13 @@ uint32_t hashLookup(struct LZ78HashTableEntry* table, uint32_t fatherIndex, uint
     return table[index].childIndex;
 }
 
-struct LZ78HashTableEntry* hashInitialize(struct LZ78HashTableEntry* table, uint32_t hashTableLength, uint32_t moduloMask)
+struct LZ78HashTableEntry* hashInitialize(struct LZ78HashTableEntry* table, uint32_t hashTableEntries, uint32_t moduloMask)
 {
     int i = 0;
     uint32_t currentValue = 0;
     if(table != NULL)
     {
-        memset(table, 0, hashTableLength);
+        memset(table, 0, hashTableEntries*sizeof(struct LZ78HashTableEntry));
         for(; i < 256; i++)
         {
             currentValue = i;  //ascii value - 1 equals to index value
@@ -208,22 +217,22 @@ struct LZ78HashTableEntry* hashInitialize(struct LZ78HashTableEntry* table, uint
     return table;
 
     exceptionHandler:
-        hashDestroy(table,hashTableLength);
+        hashDestroy(table,hashTableEntries);
         return NULL;
 }
 
-struct LZ78HashTableEntry* hashCreate(uint32_t hashTableLength, uint32_t moduloMask)
+struct LZ78HashTableEntry* hashCreate(uint32_t hashTableEntries, uint32_t moduloMask)
 {
-    return hashInitialize((struct LZ78HashTableEntry*)malloc(hashTableLength), hashTableLength, moduloMask);
+    return hashInitialize((struct LZ78HashTableEntry*)malloc(hashTableEntries*sizeof(struct LZ78HashTableEntry)), hashTableEntries, moduloMask);
 }
 
-struct LZ78HashTableEntry* hashReset(struct LZ78HashTableEntry* table, uint32_t hashTableLength, uint32_t moduloMask)
+struct LZ78HashTableEntry* hashReset(struct LZ78HashTableEntry* table, uint32_t hashTableEntries, uint32_t moduloMask)
 {
-    return hashInitialize(table, hashTableLength, moduloMask);
+    return hashInitialize(table, hashTableEntries, moduloMask);
 }
 
-void hashDestroy(struct LZ78HashTableEntry* table, uint32_t hashTableLength)
+void hashDestroy(struct LZ78HashTableEntry* table, uint32_t hashTableEntries)
 {
-    memset(table, 0, hashTableLength);
+    memset(table, 0, hashTableEntries*sizeof(struct LZ78HashTableEntry));
     free(table);
 }

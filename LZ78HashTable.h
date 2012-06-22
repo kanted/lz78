@@ -24,14 +24,7 @@
 #ifndef LZ78_HASH_TABLE
 #define LZ78_HASH_TABLE
 
-struct LZ78HashTableEntry
-{
-    //key:
-    uint32_t fatherIndex;
-    uint32_t childValue; //Only one byte is used
-    //value:
-    uint32_t childIndex;
-};
+struct LZ78HashTableEntry;
 
 struct LZ78HashTableEntry* hashInitialize(struct LZ78HashTableEntry*, uint32_t, uint32_t);
 
