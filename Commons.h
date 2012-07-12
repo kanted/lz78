@@ -65,12 +65,13 @@
 #define DEFAULT_COMPRESSION_LEVEL 3
 #define MAX_COMPRESSION_LEVEL 5
 #define HEADER_LENGTH 3
-/**
- * Indexes to access the configuration table.
- **/
-#define MAX_CHILD 0
-#define HASH_TABLE_ENTRIES 1
-#define HASH_TABLE_ENTRIES_MODULO_MASK 2
 
-uint32_t getCompressionParameter(int compressionLevel, int parameter);
+struct CompressionParameterTuple
+{
+    uint32_t maxChild;
+    uint32_t hashTableEntries;
+};
+
+extern const struct CompressionParameterTuple compressionParameters[MAX_COMPRESSION_LEVEL - MIN_COMPRESSION_LEVEL + 1];
+
 #endif

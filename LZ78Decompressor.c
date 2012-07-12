@@ -65,7 +65,14 @@ int decompress(FILE* inputFile, FILE* outputFile)
         if(r != NULL) closeBitwiseBufferedFile(r);
         return -1;
     }
-    if(readBitBuffer(r, &compressionLevel, HEADER_LENGTH) < HEADER_LENGTH || !(maxChild = getCompressionParameter(compressionLevel, MAX_CHILD)) || (table = tableCreate(maxChild)) == NULL)
+    if(readBitBuffer(r, &compressionLevel, HEADER_LENGTH) < HEADER_LENGTH ||
+    (compressionLevel < MIN_COMPRESSION_LEVEL || compressionLevel > MAX_COMPRESSION_LEVEL))
+    {
+        closeBitwiseBufferedFile(r);
+        return -1;
+    }
+    maxChild = compressionParameters[compressionLevel - MIN_COMPRESSION_LEVEL].maxChild;
+    if((table = tableCreate(maxChild)) == NULL)
     {
         closeBitwiseBufferedFile(r);
         return -1;

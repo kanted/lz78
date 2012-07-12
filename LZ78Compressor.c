@@ -56,15 +56,15 @@ int compress(FILE* inputFile, FILE* outputFile, int compressionLevel)
     uint32_t lookupIndex = ROOT_INDEX;
     uint32_t indexLengthMask = (1 << INITIAL_INDEX_LENGTH) - 1;
     uint32_t child;
-    uint32_t hashTableEntries = getCompressionParameter(compressionLevel, HASH_TABLE_ENTRIES);
-    uint32_t moduloMask = getCompressionParameter(compressionLevel, HASH_TABLE_ENTRIES_MODULO_MASK);
-    uint32_t maxChild = getCompressionParameter(compressionLevel, MAX_CHILD);
-    if(!(maxChild && hashTableEntries && moduloMask) || inputFile == NULL || w == NULL)
+    if((compressionLevel < MIN_COMPRESSION_LEVEL || compressionLevel > MAX_COMPRESSION_LEVEL) || inputFile == NULL || w == NULL)
     {
         errno = EINVAL;
         if(w != NULL) closeBitwiseBufferedFile(w);
         return -1;
     }
+    uint32_t hashTableEntries = compressionParameters[compressionLevel - MIN_COMPRESSION_LEVEL].hashTableEntries;
+    uint32_t moduloMask = hashTableEntries - 1;
+    uint32_t maxChild = compressionParameters[compressionLevel - MIN_COMPRESSION_LEVEL].maxChild;
     hashTable = hashCreate(hashTableEntries, moduloMask);
     if(hashTable == NULL)
     {
